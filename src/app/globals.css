@@ -222,6 +222,81 @@ html.reveal-on [data-reveal]:not(.is-visible) {
 
 details[open] > .faq-answer { animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* ───────── Controles de formulario consistentes en todos los navegadores (iOS Safari incluido) ───────── */
+/* Fecha/hora: iOS impone un ancho mínimo propio e ignora width:100% → se desbordaban de su contenedor */
+input[type="date"].field,
+input[type="datetime-local"].field,
+input[type="time"].field {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.875rem; /* misma altura que el resto de campos aunque esté vacío */
+  line-height: 1.5;
+  color-scheme: dark;
+}
+input[type="date"].field::-webkit-date-and-time-value,
+input[type="datetime-local"].field::-webkit-date-and-time-value {
+  min-height: 1.5em;
+  text-align: left;
+}
+input[type="date"].field::-webkit-calendar-picker-indicator,
+input[type="datetime-local"].field::-webkit-calendar-picker-indicator {
+  opacity: 0.75;
+  cursor: pointer;
+}
+
+/* Selects con flecha propia (WebKit/Safari los pintaba grises con el estilo nativo) */
+select.field {
+  -webkit-appearance: none;
+  appearance: none;
+  min-width: 0;
+  padding-right: 2.5rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23A7EBF2' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.85rem center;
+  background-size: 1.1rem;
+  text-overflow: ellipsis;
+  color-scheme: dark;
+}
+select.field option { background-color: #011c40; color: #eaf4f7; }
+
+/* Casillas y opciones con el estilo de la marca (iOS las pintaba negras) */
+input[type="checkbox"],
+input[type="radio"] {
+  -webkit-appearance: none;
+  appearance: none;
+  flex-shrink: 0;
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 1.5px solid rgba(167, 235, 242, 0.45);
+  background-color: rgba(1, 28, 64, 0.6);
+  background-position: center;
+  background-repeat: no-repeat;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  vertical-align: middle;
+}
+input[type="checkbox"] { border-radius: 0.3rem; }
+input[type="radio"] { border-radius: 999px; }
+input[type="checkbox"]:hover,
+input[type="radio"]:hover { border-color: #a7ebf2; }
+input[type="checkbox"]:checked {
+  border-color: #54acbf;
+  background-color: #54acbf;
+  background-size: 0.8rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23011C40' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3.5 8.5l3 3 6-6.5'/%3E%3C/svg%3E");
+}
+input[type="radio"]:checked {
+  border-color: #54acbf;
+  background-color: #011c40;
+  box-shadow: inset 0 0 0 3.5px #011c40, inset 0 0 0 10px #a7ebf2;
+}
+input[type="checkbox"][aria-invalid="true"] { border-color: #fb7185; }
+input[type="checkbox"]:disabled, input[type="radio"]:disabled { opacity: 0.5; cursor: not-allowed; }
+
 /* Los contenedores con scroll horizontal contienen también a sus hijos absolutos (p. ej. .sr-only) */
 .overflow-x-auto, .overflow-auto { position: relative; }
 
