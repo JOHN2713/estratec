@@ -1,0 +1,298 @@
+// Estratec.org — modelo de datos
+// Producción: PostgreSQL en Supabase. Desarrollo: Postgres embebido (npm run db:local).
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────── Usuarios y seguridad ───────────────────────────
+
+enum Role {
+  ADMIN
+  EDITOR
+}
+
+model User {
+  id                String    @id @default(cuid())
+  email             String    @unique
+  name              String
+  passwordHash      String
+  role              Role      @default(EDITOR)
+  active            Boolean   @default(true)
+  failedLogins      Int       @default(0)
+  lockedUntil       DateTime?
+  lastLoginAt       DateTime?
+  passwordChangedAt DateTime  @default(now())
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  sessions      Session[]
+  resetTokens   PasswordResetToken[]
+  assignedLeads Lead[]               @relation("LeadAssignee")
+  activities    LeadActivity[]
+  auditLogs     AuditLog[]
+}
+
+/// El id de la sesión es el SHA-256 del token de la cookie; el token en claro nunca se guarda.
+model Session {
+  id         String   @id
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?  @db.VarChar(300)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String   @db.VarChar(80)
+  entity    String?  @db.VarChar(60)
+  entityId  String?  @db.VarChar(60)
+  meta      Json?
+  ipHash    String?  @db.VarChar(64)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}
+
+/// Límite de frecuencia con ventana fija, compatible con funciones serverless.
+model RateLimit {
+  key         String   @id @db.VarChar(200)
+  count       Int      @default(0)
+  windowStart DateTime @default(now())
+}
+
+// ─────────────────────────────── CRM interno ───────────────────────────────
+
+enum LeadStatus {
+  NUEVA
+  EN_REVISION
+  CONTACTADO
+  CITA_SOLICITADA
+  CITA_CONFIRMADA
+  PROPUESTA_ENVIADA
+  GANADO
+  PERDIDO
+}
+
+enum ContactPref {
+  WHATSAPP
+  EMAIL
+}
+
+enum LeadSource {
+  FORMULARIO_WEB
+  MANUAL
+}
+
+model Lead {
+  id            String       @id @default(cuid())
+  name          String       @db.VarChar(120)
+  email         String       @db.VarChar(160)
+  phone         String       @db.VarChar(40)
+  company       String?      @db.VarChar(160)
+  serviceSlug   String?      @db.VarChar(100)
+  serviceName   String       @db.VarChar(160)
+  message       String       @db.VarChar(3000)
+  contactPref   ContactPref  @default(WHATSAPP)
+  country       String?      @db.VarChar(80)
+  timezone      String?      @db.VarChar(80)
+
+  // Preferencia del prospecto (NO es una cita confirmada)
+  preferredDate DateTime?    @db.Date
+  preferredSlot String?      @db.VarChar(40)
+  // Horario acordado manualmente por el equipo
+  agreedAt      DateTime?
+  confirmedAt   DateTime?
+  confirmedById String?
+
+  status        LeadStatus   @default(NUEVA)
+  source        LeadSource   @default(FORMULARIO_WEB)
+  originUrl     String?      @db.VarChar(500)
+  utmSource     String?      @db.VarChar(120)
+  utmMedium     String?      @db.VarChar(120)
+  utmCampaign   String?      @db.VarChar(120)
+  utmTerm       String?      @db.VarChar(120)
+  utmContent    String?      @db.VarChar(120)
+
+  privacyAcceptedAt DateTime?
+  privacyVersion    String?  @db.VarChar(20)
+
+  assignedToId  String?
+  assignedTo    User?        @relation("LeadAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  activities    LeadActivity[]
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([serviceSlug])
+  @@index([country])
+  @@index([source])
+  @@index([email])
+}
+
+enum ActivityType {
+  CREADO
+  NOTA
+  ESTADO
+  CITA
+  ASIGNACION
+  MENSAJE
+}
+
+model LeadActivity {
+  id        String       @id @default(cuid())
+  leadId    String
+  lead      Lead         @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  authorId  String?
+  author    User?        @relation(fields: [authorId], references: [id], onDelete: SetNull)
+  type      ActivityType
+  body      String       @db.VarChar(4000)
+  meta      Json?
+  createdAt DateTime     @default(now())
+
+  @@index([leadId, createdAt])
+}
+
+// ─────────────────────────────── Contenidos ───────────────────────────────
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+/// SEO por contenido: { title, description, canonical, noindex, ogTitle, ogDescription, ogImage }
+model Service {
+  id           String        @id @default(cuid())
+  slug         String        @unique @db.VarChar(120)
+  name         String        @db.VarChar(120)
+  shortName    String        @db.VarChar(60)
+  icon         String        @db.VarChar(40)
+  summary      String        @db.VarChar(400)
+  h1           String        @db.VarChar(160)
+  intro        String        @db.VarChar(1200)
+  problem      String        @db.VarChar(3000)
+  includes     String[]
+  solutions    String[]
+  deliverables String[]
+  forWho       String        @db.VarChar(1500)
+  ctaLabel     String        @db.VarChar(100)
+  whatsappText String        @db.VarChar(500)
+  image        String?       @db.VarChar(500)
+  imageAlt     String?       @db.VarChar(200)
+  order        Int           @default(0)
+  status       PublishStatus @default(DRAFT)
+  seo          Json?
+  faqs         Faq[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([status, order])
+}
+
+model Faq {
+  id        String        @id @default(cuid())
+  question  String        @db.VarChar(300)
+  answer    String        @db.VarChar(3000)
+  order     Int           @default(0)
+  status    PublishStatus @default(DRAFT)
+  showOnHome Boolean      @default(true)
+  serviceId String?
+  service   Service?      @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, order])
+  @@index([serviceId])
+}
+
+model Project {
+  id         String        @id @default(cuid())
+  slug       String        @unique @db.VarChar(120)
+  title      String        @db.VarChar(160)
+  client     String?       @db.VarChar(160)
+  sector     String?       @db.VarChar(120)
+  summary    String        @db.VarChar(400)
+  challenge  String        @db.VarChar(3000)
+  solution   String        @db.VarChar(3000)
+  tech       String[]
+  results    String?       @db.VarChar(2000)
+  image      String?       @db.VarChar(500)
+  imageAlt   String?       @db.VarChar(200)
+  videoUrl   String?       @db.VarChar(500)
+  repoUrl    String?       @db.VarChar(500)
+  order      Int           @default(0)
+  status     PublishStatus @default(DRAFT)
+  seo        Json?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([status, order])
+}
+
+model Article {
+  id          String        @id @default(cuid())
+  slug        String        @unique @db.VarChar(140)
+  title       String        @db.VarChar(180)
+  excerpt     String        @db.VarChar(400)
+  body        String        // Markdown (sin HTML crudo)
+  author      String?       @db.VarChar(120)
+  image       String?       @db.VarChar(500)
+  imageAlt    String?       @db.VarChar(200)
+  status      PublishStatus @default(DRAFT)
+  publishedAt DateTime?
+  seo         Json?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status, publishedAt])
+}
+
+/// Bloques de texto editables (hero, secciones de inicio, páginas legales…). data se valida con zod.
+model ContentBlock {
+  key       String   @id @db.VarChar(80)
+  data      Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Configuración global (contacto, plantillas, analítica, SEO global…). Nunca guarda secretos.
+model Setting {
+  key       String   @id @db.VarChar(80)
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model Redirect {
+  id        String   @id @default(cuid())
+  from      String   @unique @db.VarChar(300)
+  to        String   @db.VarChar(500)
+  permanent Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
