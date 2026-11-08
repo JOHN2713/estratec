@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import { Mail, MessageCircle, Send } from "lucide-react";
+import { Check, Copy, Mail, MessageCircle, Send } from "lucide-react";
 import type { LeadStatus } from "@prisma/client";
 import {
   addNoteAction, assignAction, cancelAppointmentAction, confirmAppointmentAction, createLeadAction, logOutreachAction,
@@ -9,7 +9,7 @@ import {
 } from "@/app/admin/actions/leads";
 import { COUNTRIES, NOT_SURE, SLOTS, STATUS_LABEL, STATUS_ORDER } from "@/lib/leads";
 import { renderTemplate } from "@/lib/templates";
-import { waLink } from "@/lib/whatsapp";
+import { gmailComposeUrl, waLink } from "@/lib/whatsapp";
 import { FieldError, FormAlert, SubmitButton } from "./ui";
 
 export function StatusForm({ leadId, status }: { leadId: string; status: LeadStatus }) {
@@ -18,8 +18,8 @@ export function StatusForm({ leadId, status }: { leadId: string; status: LeadSta
     <form action={action} className="space-y-3">
       <input type="hidden" name="leadId" value={leadId} />
       <label htmlFor="status" className="field-label">Estado del pipeline</label>
-      <div className="flex gap-2">
-        <select id="status" name="status" defaultValue={status === "CITA_CONFIRMADA" ? "" : status} className="field">
+      <div className="flex flex-wrap gap-2">
+        <select id="status" name="status" defaultValue={status === "CITA_CONFIRMADA" ? "" : status} className="field min-w-0 flex-1 basis-48">
           {status === "CITA_CONFIRMADA" && <option value="" disabled>Cita confirmada (cambiar…)</option>}
           {STATUS_ORDER.filter((s) => s !== "CITA_CONFIRMADA").map((s) => (
             <option key={s} value={s}>{STATUS_LABEL[s]}</option>
@@ -89,8 +89,8 @@ export function AssignForm({ leadId, current, users }: { leadId: string; current
     <form action={action} className="space-y-2">
       <input type="hidden" name="leadId" value={leadId} />
       <label htmlFor="assignedToId" className="field-label">Responsable</label>
-      <div className="flex gap-2">
-        <select id="assignedToId" name="assignedToId" defaultValue={current ?? ""} className="field">
+      <div className="flex flex-wrap gap-2">
+        <select id="assignedToId" name="assignedToId" defaultValue={current ?? ""} className="field min-w-0 flex-1 basis-48">
           <option value="">Sin asignar</option>
           {users.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
         </select>
@@ -109,10 +109,12 @@ export function TemplateComposer({
   email,
   templates,
   vars,
+  senderEmail,
 }: {
   leadId: string;
   phone: string;
   email: string;
+  senderEmail: string;
   templates: Tpl[];
   vars: Record<string, string>;
 }) {
@@ -131,7 +133,16 @@ export function TemplateComposer({
     setBody(renderTemplate(tpl.body, v));
   }, [tpl, varsKey]);
 
-  const mailto = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body.replace(/\*\*(.+?)\*\*/g, "$1"))}`;
+  const plainBody = body.replace(/\*\*(.+?)\*\*/g, "$1");
+  const gmail = gmailComposeUrl({ to: email, subject, body: plainBody, account: senderEmail });
+  const [copied, setCopied] = useState(false);
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(`${subject}\n\n${plainBody}`);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {}
+  };
   const wa = waLink(phone, body.replace(/\*\*(.+?)\*\*/g, "*$1*"));
 
   return (
@@ -163,9 +174,19 @@ export function TemplateComposer({
         >
           <MessageCircle className="h-4 w-4" aria-hidden="true" /> Abrir en WhatsApp
         </a>
-        <a href={mailto} className="btn-secondary btn-sm" onClick={() => void logOutreachAction(leadId, "correo", tpl?.name ?? "")}>
-          <Mail className="h-4 w-4" aria-hidden="true" /> Abrir en mi correo
+        <a
+          href={gmail}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="btn-secondary btn-sm"
+          onClick={() => void logOutreachAction(leadId, "correo", tpl?.name ?? "")}
+        >
+          <Mail className="h-4 w-4" aria-hidden="true" /> Abrir en Gmail
         </a>
+        <button type="button" onClick={copy} className="btn-ghost btn-sm">
+          {copied ? <Check className="h-4 w-4" aria-hidden="true" /> : <Copy className="h-4 w-4" aria-hidden="true" />}
+          <span aria-live="polite">{copied ? "Copiado" : "Copiar mensaje"}</span>
+        </button>
         <SubmitButton className="btn-primary btn-sm" pendingText="Enviando…">
           <Send className="h-4 w-4" aria-hidden="true" /> Enviar desde el sistema
         </SubmitButton>
@@ -189,13 +210,13 @@ type LeadData = {
   preferredSlot?: string | null;
 };
 
-export function LeadEditForm({ lead, services }: { lead?: LeadData; services: { slug: string; name: string }[] }) {
+export function LeadEditForm({ lead, services, compact = false }: { lead?: LeadData; services: { slug: string; name: string }[]; compact?: boolean }) {
   const [state, action] = useActionState(lead?.id ? updateLeadAction : createLeadAction, null);
   const e = (n: string) => <FieldError state={state} name={n} />;
   return (
     <form action={action} className="space-y-4">
       {lead?.id && <input type="hidden" name="leadId" value={lead.id} />}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={`grid gap-4 ${compact ? "" : "sm:grid-cols-2"}`}>
         <div>
           <label className="field-label" htmlFor="le-name">Nombre y apellido *</label>
           <input id="le-name" name="name" defaultValue={lead?.name} className="field" required maxLength={120} />
@@ -238,7 +259,7 @@ export function LeadEditForm({ lead, services }: { lead?: LeadData; services: { 
             {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
           </select>
         </div>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           <div>
             <label className="field-label" htmlFor="le-date">Fecha preferida</label>
             <input id="le-date" name="preferredDate" type="date" defaultValue={lead?.preferredDate} className="field" />
@@ -252,12 +273,12 @@ export function LeadEditForm({ lead, services }: { lead?: LeadData; services: { 
           </div>
         </div>
         {!lead?.id && (
-          <div className="sm:col-span-2">
+          <div className={compact ? "" : "sm:col-span-2"}>
             <label className="field-label" htmlFor="le-src">Origen del contacto (opcional)</label>
             <input id="le-src" name="utmSource" placeholder="Ej.: referido, evento, Instagram, llamada" className="field" maxLength={120} />
           </div>
         )}
-        <div className="sm:col-span-2">
+        <div className={compact ? "" : "sm:col-span-2"}>
           <label className="field-label" htmlFor="le-msg">Necesidad / mensaje *</label>
           <textarea id="le-msg" name="message" rows={4} defaultValue={lead?.message} className="field" required maxLength={3000} />
           {e("message")}

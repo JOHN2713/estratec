@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { requireAdmin } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { slotLabel } from "@/lib/leads";
-import { waLink } from "@/lib/whatsapp";
+import { gmailComposeUrl, waLink } from "@/lib/whatsapp";
 import { leadVars } from "@/lib/server/leads-service";
 import { deleteLeadAction } from "@/app/admin/actions/leads";
 import { AdminPage, Panel } from "@/components/admin/Page";
@@ -60,7 +60,7 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
           <a href={waLink(lead.phone)} target="_blank" rel="noopener noreferrer" className="btn-whatsapp btn-sm">
             <MessageCircle className="h-4 w-4" aria-hidden="true" /> WhatsApp
           </a>
-          <a href={`mailto:${lead.email}`} className="btn-secondary btn-sm">
+          <a href={gmailComposeUrl({ to: lead.email, account: settings.contact.email })} target="_blank" rel="noopener noreferrer" className="btn-secondary btn-sm">
             <Mail className="h-4 w-4" aria-hidden="true" /> Correo
           </a>
         </>
@@ -105,7 +105,7 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
           </Panel>
 
           <Panel title="Responder con plantilla" description="Prepara el mensaje con los datos del prospecto. El envío siempre es una acción explícita del equipo.">
-            <TemplateComposer leadId={lead.id} phone={lead.phone} email={lead.email} templates={settings.crmTemplates.templates} vars={vars} />
+            <TemplateComposer leadId={lead.id} phone={lead.phone} email={lead.email} templates={settings.crmTemplates.templates} vars={vars} senderEmail={settings.contact.email} />
           </Panel>
 
           <Panel title="Seguimiento">
@@ -172,6 +172,7 @@ export default async function LeadDetail({ params }: { params: Promise<{ id: str
             <summary className="cursor-pointer font-semibold">Editar datos</summary>
             <div className="mt-5">
               <LeadEditForm
+                compact
                 services={services}
                 lead={{
                   id: lead.id, name: lead.name, email: lead.email, phone: lead.phone, company: lead.company, serviceSlug: lead.serviceSlug,

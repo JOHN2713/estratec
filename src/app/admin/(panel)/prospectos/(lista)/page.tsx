@@ -73,38 +73,57 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         ))}
       </nav>
 
-      <form method="get" className="mb-6 grid gap-3 rounded-2xl border border-luna-50/10 bg-luna-700/25 p-4 sm:grid-cols-2 lg:grid-cols-6">
+      <form method="get" className="mb-6 space-y-4 rounded-2xl border border-luna-50/10 bg-luna-700/25 p-4 sm:p-5">
         {sp.estado && <input type="hidden" name="estado" value={sp.estado} />}
-        <div className="lg:col-span-2">
-          <label htmlFor="q" className="sr-only">Buscar</label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-dim" aria-hidden="true" />
-            <input id="q" name="q" defaultValue={sp.q} placeholder="Nombre, correo, empresa, teléfono…" className="field pl-9" maxLength={100} />
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))]">
+          <div className="min-w-0 sm:col-span-2 xl:col-span-1">
+            <label htmlFor="q" className="mb-1.5 block text-xs font-medium text-ink-dim">Buscar</label>
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-dim" aria-hidden="true" />
+              <input id="q" name="q" defaultValue={sp.q} placeholder="Nombre, correo, empresa, teléfono…" className="field pl-9" maxLength={100} />
+            </div>
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="f-servicio" className="mb-1.5 block text-xs font-medium text-ink-dim">Servicio</label>
+            <select id="f-servicio" name="servicio" defaultValue={sp.servicio ?? ""} className="field truncate pr-9">
+              <option value="">Todos</option>
+              {services.map((s) => <option key={s.slug} value={s.slug}>{s.shortName}</option>)}
+              <option value="ninguno">No estoy seguro/a</option>
+            </select>
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="f-pais" className="mb-1.5 block text-xs font-medium text-ink-dim">País</label>
+            <select id="f-pais" name="pais" defaultValue={sp.pais ?? ""} className="field truncate pr-9">
+              <option value="">Todos</option>
+              {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="f-fuente" className="mb-1.5 block text-xs font-medium text-ink-dim">Fuente</label>
+            <select id="f-fuente" name="fuente" defaultValue={sp.fuente ?? ""} className="field truncate pr-9">
+              <option value="">Todas</option>
+              <option value="FORMULARIO_WEB">Formulario web</option>
+              <option value="MANUAL">Registro manual</option>
+            </select>
           </div>
         </div>
-        <select name="servicio" defaultValue={sp.servicio ?? ""} className="field" aria-label="Servicio">
-          <option value="">Todos los servicios</option>
-          {services.map((s) => <option key={s.slug} value={s.slug}>{s.shortName}</option>)}
-          <option value="ninguno">No estoy seguro/a</option>
-        </select>
-        <select name="pais" defaultValue={sp.pais ?? ""} className="field" aria-label="País">
-          <option value="">Todos los países</option>
-          {COUNTRIES.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
-        <select name="fuente" defaultValue={sp.fuente ?? ""} className="field" aria-label="Fuente">
-          <option value="">Todas las fuentes</option>
-          <option value="FORMULARIO_WEB">Formulario web</option>
-          <option value="MANUAL">Registro manual</option>
-        </select>
-        <div className="flex gap-2">
-          <input type="date" name="desde" defaultValue={sp.desde} className="field" aria-label="Desde" />
-          <input type="date" name="hasta" defaultValue={sp.hasta} className="field" aria-label="Hasta" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+          <div className="min-w-0">
+            <label htmlFor="f-desde" className="mb-1.5 block text-xs font-medium text-ink-dim">Recibido desde</label>
+            <input id="f-desde" type="date" name="desde" defaultValue={sp.desde} className="field" />
+          </div>
+          <div className="min-w-0">
+            <label htmlFor="f-hasta" className="mb-1.5 block text-xs font-medium text-ink-dim">Hasta</label>
+            <input id="f-hasta" type="date" name="hasta" defaultValue={sp.hasta} className="field" />
+          </div>
+          <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-1">
+            <button type="submit" className="btn-primary btn-sm">Aplicar filtros</button>
+            <Link href="/admin/prospectos" className="btn-ghost btn-sm">Limpiar</Link>
+          </div>
         </div>
-        <div className="flex gap-2 lg:col-span-6">
-          <button type="submit" className="btn-primary btn-sm">Aplicar filtros</button>
-          <Link href="/admin/prospectos" className="btn-ghost btn-sm">Limpiar</Link>
-          <span className="ml-auto self-center text-sm text-ink-muted">{total} resultado{total === 1 ? "" : "s"}</span>
-        </div>
+        <p className="text-sm text-ink-muted">
+          {total} resultado{total === 1 ? "" : "s"}
+        </p>
       </form>
 
       {leads.length === 0 ? (

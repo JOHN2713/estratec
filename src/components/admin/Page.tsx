@@ -16,7 +16,7 @@ export function AdminPage({
   children: React.ReactNode;
 }) {
   return (
-    <div>
+    <div className="min-w-0">
       {back && (
         <Link href={back.href} className="mb-4 inline-flex items-center gap-1.5 text-sm text-ink-muted hover:text-white">
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> {back.label}
@@ -36,7 +36,7 @@ export function AdminPage({
 
 export function Panel({ title, description, children, className = "" }: { title?: string; description?: string; children: React.ReactNode; className?: string }) {
   return (
-    <section className={`rounded-2xl border border-luna-50/10 bg-luna-700/25 p-5 sm:p-6 ${className}`}>
+    <section className={`min-w-0 rounded-2xl border border-luna-50/10 bg-luna-700/25 p-5 sm:p-6 ${className}`}>
       {title && <h2 className="text-lg font-semibold">{title}</h2>}
       {description && <p className="mt-1 text-sm text-ink-muted">{description}</p>}
       <div className={title || description ? "mt-5" : ""}>{children}</div>

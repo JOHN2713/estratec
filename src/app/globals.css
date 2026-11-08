@@ -222,6 +222,16 @@ html.reveal-on [data-reveal]:not(.is-visible) {
 
 details[open] > .faq-answer { animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* Los contenedores con scroll horizontal contienen también a sus hijos absolutos (p. ej. .sr-only) */
+.overflow-x-auto, .overflow-auto { position: relative; }
+
+/* Barras de desplazamiento discretas acordes a la paleta */
+* { scrollbar-width: thin; scrollbar-color: rgba(84, 172, 191, 0.35) transparent; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb { background: rgba(84, 172, 191, 0.3); border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+*::-webkit-scrollbar-thumb:hover { background-color: rgba(84, 172, 191, 0.55); }
+
 @layer utilities {
   .bg-grid {
     background-image:
