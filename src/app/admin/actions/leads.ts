@@ -151,7 +151,7 @@ export async function sendLeadEmailAction(_: ActionState, fd: FormData): Promise
   if (!lead) return fail("Prospecto no encontrado.");
   const settings = await getSettings();
   const res = await sendMail({ to: lead.email, subject: subject.data, text: body.data, replyTo: settings.contact.email });
-  if (!res.ok) return fail("No se pudo enviar el correo. Revisa la configuración de Resend.");
+  if (!res.ok) return fail("No se pudo enviar el correo. Revisa el proveedor de correo en Configuración › Correos automáticos.");
   await db.leadActivity.create({
     data: { leadId: leadId.data, authorId: user.id, type: "MENSAJE", body: `Correo enviado: “${subject.data}”${tplName.success && tplName.data ? ` (plantilla: ${tplName.data})` : ""}` },
   });
