@@ -31,15 +31,15 @@ export default async function ResourcesPage() {
       <section className="pb-24">
         <div className="container-site">
           {articles.length === 0 ? (
-            <div className="card p-10 text-center">
+            <div data-reveal="zoom" className="card p-10 text-center">
               <h2 className="text-2xl font-bold">Muy pronto</h2>
               <p className="mx-auto mt-3 max-w-xl text-ink-muted">Estamos preparando nuestros primeros recursos. Mientras tanto, si tienes una pregunta concreta, escríbenos.</p>
               <Link href="/contacto" className="btn-primary mt-6">Contáctanos</Link>
             </div>
           ) : (
-            <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <ul data-reveal-group className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {articles.map((a) => (
-                <li key={a.id}>
+                <li data-reveal key={a.id}>
                   <article className="card card-hover relative flex h-full flex-col overflow-hidden">
                     {a.image ? (
                       <div className="relative aspect-[16/9]">

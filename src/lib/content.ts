@@ -203,7 +203,7 @@ export const getBlock = cache(async <K extends BlockKey>(key: K): Promise<Blocks
     const row = await db.contentBlock.findUnique({ where: { key } });
     return merge(key, row?.data);
   } catch (e) {
-    console.error("[content] BD no disponible, usando contenido por defecto", (e as Error).message);
-    return blockDefaults[key];
+    console.error("[content] BD no disponible", (e as Error).message);
+    throw e; // sin fallback silencioso: ISR conserva la última versión válida
   }
 });

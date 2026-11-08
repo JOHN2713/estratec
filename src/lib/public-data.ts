@@ -8,12 +8,17 @@ async function visible() {
   return isEnabled ? {} : { status: "PUBLISHED" as const };
 }
 
-async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
+/**
+ * Las consultas públicas NO ocultan errores de base de datos: si fallan, la página lanza error y
+ * Next/Vercel conserva la última versión válida en caché (ISR) en lugar de publicar un 404 o una
+ * página vacía.
+ */
+async function safe<T>(fn: () => Promise<T>, _fallback: T): Promise<T> {
   try {
     return await fn();
   } catch (e) {
     console.error("[public-data]", (e as Error).message);
-    return fallback;
+    throw e;
   }
 }
 

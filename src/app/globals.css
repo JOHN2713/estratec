@@ -44,8 +44,10 @@
 
   .btn {
     @apply inline-flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-[15px] font-semibold
-      transition duration-200 select-none whitespace-nowrap;
+      text-center leading-snug transition duration-200 select-none;
+    text-wrap: balance;
   }
+  .btn > svg { flex-shrink: 0; }
   .btn:disabled, .btn[aria-disabled="true"] { @apply cursor-not-allowed opacity-50; }
   .btn-primary {
     @apply btn text-luna-900;
@@ -68,7 +70,46 @@
     @apply relative rounded-2xl border border-luna-50/10 bg-luna-700/40 backdrop-blur-sm;
     box-shadow: inset 0 1px 0 rgba(167, 235, 242, 0.06);
   }
-  .card-hover { @apply transition duration-300 hover:-translate-y-0.5 hover:border-luna-50/30 hover:shadow-glow; }
+  .card-hover {
+    @apply isolate overflow-hidden transition-[translate,border-color,box-shadow] duration-500 ease-out
+      hover:border-luna-50/30 hover:shadow-glow;
+  }
+  /* translate (propiedad independiente) no choca con el transform de las animaciones de aparición */
+  .card-hover:hover { translate: 0 -4px; }
+  /* Brillo que sigue al cursor (variables --mx/--my las fija SiteEffects) */
+  .card-hover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0%), rgba(167, 235, 242, 0.12), transparent 45%);
+  }
+  .card-hover:hover::before { opacity: 1; }
+  /* Borde superior luminoso */
+  .card-hover::after {
+    content: "";
+    position: absolute;
+    inset-inline: 12%;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(167, 235, 242, 0.55), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .card-hover:hover::after { opacity: 1; }
+
+  .icon-tile {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-luna-50/20 text-luna-50;
+    background: linear-gradient(140deg, rgba(38, 101, 140, 0.65), rgba(2, 56, 89, 0.9));
+    box-shadow: inset 0 1px 0 rgba(167, 235, 242, 0.15), 0 8px 24px -12px rgba(84, 172, 191, 0.6);
+  }
+  .divider-glow {
+    @apply pointer-events-none absolute inset-x-0 top-0 h-px;
+    background: linear-gradient(90deg, transparent, rgba(84, 172, 191, 0.4), transparent);
+  }
 
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-luna-50;
@@ -123,6 +164,63 @@
   .prose-estratec table { @apply my-6 w-full text-left text-sm; }
   .prose-estratec th, .prose-estratec td { @apply border-b border-luna-50/10 px-3 py-2; }
 }
+
+/* ───────── Animaciones de aparición (fade in / fade out al hacer scroll) ─────────
+   Solo se ocultan elementos cuando JS está listo (html.reveal-on); sin JS todo es visible. */
+html.reveal-on [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0) scale(0.985);
+  filter: blur(6px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    translate 0.5s ease-out 0s,
+    border-color 0.5s ease-out 0s,
+    box-shadow 0.5s ease-out 0s;
+  transition-delay: calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms), calc(var(--i, 0) * 80ms), 0s, 0s, 0s;
+  will-change: opacity, transform;
+}
+html.reveal-on [data-reveal="left"] { transform: translate3d(-32px, 0, 0); }
+html.reveal-on [data-reveal="right"] { transform: translate3d(32px, 0, 0); }
+html.reveal-on [data-reveal="zoom"] { transform: scale(0.94); }
+html.reveal-on [data-reveal].is-visible {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+/* Al salir de la vista se desvanece más rápido y sin retraso */
+html.reveal-on [data-reveal]:not(.is-visible) {
+  transition-duration: 0.45s;
+  transition-delay: 0s;
+}
+
+/* Entrada del hero al cargar la página */
+@keyframes rise {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.animate-rise { animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both; animation-delay: calc(var(--d, 0) * 1ms); }
+
+@keyframes shine {
+  from { background-position: 0% 50%; }
+  to { background-position: 200% 50%; }
+}
+.text-gradient-animated {
+  background: linear-gradient(100deg, #ffffff 0%, #a7ebf2 30%, #54acbf 50%, #a7ebf2 70%, #ffffff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shine 8s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.reveal-on [data-reveal] { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .animate-rise, .text-gradient-animated { animation: none !important; }
+}
+
+details[open] > .faq-answer { animation: rise 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @layer utilities {
   .bg-grid {

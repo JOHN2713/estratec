@@ -235,7 +235,8 @@ export const getSettings = cache(async (): Promise<Settings> => {
   try {
     rows = await db.setting.findMany();
   } catch (e) {
-    console.error("[settings] BD no disponible, usando valores por defecto", (e as Error).message);
+    console.error("[settings] BD no disponible", (e as Error).message);
+    throw e; // sin fallback silencioso: ISR conserva la última versión válida
   }
   const map = new Map(rows.map((r) => [r.key, r.value]));
   const out = {} as Settings;

@@ -9,6 +9,8 @@ import { SiteHeader, type NavItem } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { WhatsAppFloat } from "@/components/site/WhatsAppFloat";
 import { Analytics } from "@/components/site/Analytics";
+import { SiteEffects } from "@/components/site/SiteEffects";
+import { REVEAL_BOOT } from "@/lib/reveal-boot";
 
 const NAV: NavItem[] = [
   { href: "/servicios", label: "Servicios" },
@@ -26,6 +28,8 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
 
   return (
     <>
+      <script dangerouslySetInnerHTML={{ __html: REVEAL_BOOT }} />
+      <SiteEffects />
       {draft.isEnabled && (
         <div className="relative z-50 bg-amber-300 px-4 py-2 text-center text-sm font-medium text-amber-950">
           Vista previa: se muestran contenidos en borrador.{" "}

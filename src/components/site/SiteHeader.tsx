@@ -63,7 +63,7 @@ export function SiteHeader({ nav, logo }: { nav: NavItem[]; logo: React.ReactNod
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link href="/contacto#formulario" className="btn-primary btn-sm hidden sm:inline-flex">
+          <Link href="/contacto#formulario" className="btn-primary btn-sm hidden whitespace-nowrap sm:inline-flex">
             Agendar consultoría
           </Link>
           <button

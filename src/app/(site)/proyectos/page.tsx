@@ -24,7 +24,7 @@ export default async function ProjectsPage() {
       <PageHeader crumbs={[{ name: "Proyectos", href: "/proyectos" }]} eyebrow={home.projects.eyebrow} title={home.projects.title} intro={home.projects.intro} />
       {projects.length > 0 ? (
         <section className="pb-24" aria-label="Listado de proyectos">
-          <div className="container-site grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div data-reveal-group className="container-site grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {projects.map((p) => <ProjectCard key={p.id} p={p} />)}
           </div>
         </section>

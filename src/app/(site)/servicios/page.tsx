@@ -26,7 +26,7 @@ export default async function ServicesPage() {
     <>
       <PageHeader crumbs={[{ name: "Servicios", href: "/servicios" }]} eyebrow={home.services.eyebrow} title={home.services.title} intro={home.services.intro} />
       <section className="pb-20" aria-label="Catálogo de servicios">
-        <div className="container-site grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div data-reveal-group className="container-site grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {services.map((s) => (
             <ServiceCard key={s.id} s={s} whatsappNumber={contact.whatsappNumber} waEnabled={cta.whatsappEnabled} />
           ))}
@@ -35,7 +35,7 @@ export default async function ServicesPage() {
       <Objectives data={home.objectives} />
       <section className="section pt-0">
         <div className="container-site">
-          <div className="card flex flex-col gap-6 p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
+          <div data-reveal="zoom" className="card flex flex-col gap-6 p-8 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <h2 className="text-2xl font-bold sm:text-3xl">¿No sabes por dónde empezar?</h2>
               <p className="mt-2 max-w-2xl text-ink-muted">Cuéntanos tu reto y te orientamos sobre la solución más adecuada para tu negocio.</p>

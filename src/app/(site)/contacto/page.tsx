@@ -31,7 +31,7 @@ export default async function ContactPage() {
       />
       <section className="pb-24">
         <div className="container-site grid gap-10 lg:grid-cols-[1.25fr_0.75fr]">
-          <div id="formulario" className="scroll-mt-24">
+          <div data-reveal id="formulario" className="scroll-mt-24">
             <h2 className="sr-only">Formulario de solicitud de asesoría</h2>
             <LeadForm
               services={services.map((s) => ({ slug: s.slug, name: s.name }))}
@@ -39,9 +39,9 @@ export default async function ContactPage() {
               disabledText={cta.formEnabled ? null : cta.formDisabledText}
             />
           </div>
-          <aside className="space-y-4">
+          <aside data-reveal-group className="space-y-4">
             {cta.whatsappEnabled && (
-              <div className="card p-6">
+              <div data-reveal="right" className="card card-hover p-6">
                 <MessageCircle className="h-6 w-6 text-luna-50" aria-hidden="true" />
                 <h2 className="mt-3 text-lg font-semibold">WhatsApp</h2>
                 <p className="mt-1 text-sm text-ink-muted">La forma más rápida de iniciar la conversación.</p>
@@ -49,7 +49,7 @@ export default async function ContactPage() {
                 <WaLink href={wa} location="contacto_lateral" className="btn-whatsapp mt-4 w-full">Escribir por WhatsApp</WaLink>
               </div>
             )}
-            <div className="card p-6">
+            <div data-reveal="right" className="card card-hover p-6">
               <Mail className="h-6 w-6 text-luna-50" aria-hidden="true" />
               <h2 className="mt-3 text-lg font-semibold">Correo</h2>
               <p className="mt-2 break-all text-sm">
@@ -57,14 +57,14 @@ export default async function ContactPage() {
               </p>
             </div>
             {(contact.businessHours || contact.hoursNote) && (
-              <div className="card p-6">
+              <div data-reveal="right" className="card card-hover p-6">
                 <Clock className="h-6 w-6 text-luna-50" aria-hidden="true" />
                 <h2 className="mt-3 text-lg font-semibold">Horario de atención</h2>
                 {contact.businessHours && <p className="mt-2 text-sm text-ink">{contact.businessHours}</p>}
                 {contact.hoursNote && <p className="mt-1 text-sm text-ink-muted">{contact.hoursNote}</p>}
               </div>
             )}
-            <div className="rounded-2xl border border-dashed border-luna-50/15 p-5 text-sm text-ink-muted">
+            <div data-reveal="right" className="rounded-2xl border border-dashed border-luna-50/15 p-5 text-sm text-ink-muted">
               <strong className="text-white">Sobre las citas:</strong> la fecha y hora que propongas son una preferencia. Una persona del equipo
               te contactará para confirmar el horario; la cita solo queda agendada después de esa confirmación.
             </div>
