@@ -37,7 +37,8 @@ En entornos *Preview* de Vercel el `robots.txt` bloquea la indexación.
 |---|---|
 | `src/app/(site)` | Sitio público: inicio, `/servicios/[slug]`, `/proyectos`, `/recursos`, `/contacto`, legales |
 | `src/app/api/leads` | Recepción del formulario (validación, anti-spam, rate limit, correos) |
-| `src/app/admin` | Panel: login/recuperación, dashboard, CRM, contenidos, SEO, configuración, usuarios, auditoría |
+| `src/app/admin` | Panel: login/recuperación, dashboard, CRM, contenidos, multimedia, SEO, configuración, usuarios, auditoría |
+| `src/app/media/[id]` | Sirve las imágenes de la biblioteca multimedia (WebP en Postgres, caché inmutable) |
 | `src/lib` | Auth/sesiones, settings, contenidos, SEO, correo, rate limit, auditoría |
 | `prisma/` | Esquema, migración inicial y contenido semilla |
 | `public/assets/brand` | `Estratec.svg` original (sin modificar), variante blanca y mascota a color |

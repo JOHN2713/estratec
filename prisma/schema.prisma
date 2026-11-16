@@ -37,6 +37,7 @@ model User {
   assignedLeads Lead[]               @relation("LeadAssignee")
   activities    LeadActivity[]
   auditLogs     AuditLog[]
+  mediaFiles    MediaFile[]
 }
 
 /// El id de la sesión es el SHA-256 del token de la cookie; el token en claro nunca se guarda.
@@ -287,6 +288,24 @@ model Setting {
   key       String   @id @db.VarChar(80)
   value     Json
   updatedAt DateTime @updatedAt
+}
+
+/// Imágenes de la biblioteca de medios. Siempre WebP (se convierten al subir).
+/// Se sirven en /media/[id] con caché inmutable: el contenido de un id nunca cambia.
+model MediaFile {
+  id           String   @id @default(cuid())
+  filename     String   @db.VarChar(200)
+  mimeType     String   @db.VarChar(60)
+  width        Int
+  height       Int
+  size         Int
+  data         Bytes
+  alt          String?  @db.VarChar(200)
+  uploadedById String?
+  uploadedBy   User?    @relation(fields: [uploadedById], references: [id], onDelete: SetNull)
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
 }
 
 model Redirect {

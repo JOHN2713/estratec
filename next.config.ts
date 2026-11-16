@@ -51,7 +51,8 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    serverActions: { bodySizeLimit: "1mb" },
+    // 12 MB: margen sobre el límite de subida de imágenes (10 MB) en /admin/multimedia.
+    serverActions: { bodySizeLimit: "12mb" },
   },
   async headers() {
     return [

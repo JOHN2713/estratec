@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Boxes, CircleHelp, ExternalLink, FileText, FolderKanban, History, House, Inbox, LayoutDashboard, Link2, LogOut, Menu,
+  Boxes, CircleHelp, ExternalLink, FileText, FolderKanban, History, House, Image, Inbox, LayoutDashboard, Link2, LogOut, Menu,
   Newspaper, Search, Settings, UserCog, Users, X, type LucideIcon,
 } from "lucide-react";
 import { logoutAction } from "@/app/admin/actions/auth";
@@ -25,6 +25,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
       { href: "/admin/proyectos", label: "Proyectos", icon: FolderKanban, perm: "all" },
       { href: "/admin/recursos", label: "Recursos", icon: Newspaper, perm: "all" },
       { href: "/admin/legales", label: "Páginas legales", icon: FileText, perm: "all" },
+      { href: "/admin/multimedia", label: "Multimedia", icon: Image, perm: "all" },
     ],
   },
   {
