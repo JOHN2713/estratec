@@ -55,9 +55,10 @@ function CopyUrlButton({ id }: { id: string }) {
     <button
       type="button"
       className="btn-secondary btn-sm"
+      title="Copia la ruta relativa: es la que aceptan los campos de imagen de los contenidos"
       onClick={async () => {
         try {
-          await navigator.clipboard.writeText(`${window.location.origin}/media/${id}`);
+          await navigator.clipboard.writeText(`/media/${id}`);
           setCopied(true);
           setTimeout(() => setCopied(false), 2000);
         } catch {

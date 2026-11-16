@@ -18,7 +18,11 @@ const slug = z.string().trim().toLowerCase().max(120).regex(/^[a-z0-9]+(?:-[a-z0
 const lines = z.array(t(300)).max(40);
 const status = z.enum(["DRAFT", "PUBLISHED"]);
 const order = z.coerce.number().int().min(0).max(999);
-const mediaUrl = t(500).refine((v) => v === "" || (v.startsWith("/") && !v.startsWith("//")) || /^https:\/\/[^\s]+$/.test(v), "Ruta /… o URL https://");
+// Las URLs absolutas del propio sitio (/media/…) se guardan como rutas relativas: funcionan con
+// next/image en cualquier dominio (preview de Vercel, producción) y no quedan atadas al dominio actual.
+const mediaUrl = t(500)
+  .refine((v) => v === "" || (v.startsWith("/") && !v.startsWith("//")) || /^https:\/\/[^\s]+$/.test(v), "Ruta /… o URL https://")
+  .transform((v) => v.replace(/^https:\/\/[^/]+(?=\/media\/)/i, ""));
 const httpsUrl = t(500).refine((v) => v === "" || /^https:\/\/[^\s]+$/.test(v), "Debe ser una URL https://");
 const internalPath = z.string().trim().max(300).regex(/^\/[^\s?#]*$/, "Debe empezar con / (sin dominio)");
 const opt = (v: string) => (v === "" ? null : v);
