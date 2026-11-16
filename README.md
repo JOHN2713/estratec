@@ -26,8 +26,9 @@ Sin `RESEND_API_KEY`, en desarrollo los correos se imprimen en la consola.
 2. **Resend:** agrega y verifica el dominio `estratec.org` (registros DNS SPF/DKIM), crea una API key.
 3. **Vercel:** importa el repositorio y define las variables de `.env.example` en *Production* (y otras distintas en *Preview*):
    `DATABASE_URL`, `DIRECT_URL`, `SITE_URL=https://estratec.org`, `AUTH_SECRET` (`openssl rand -base64 48`), `RESEND_API_KEY`, `MAIL_FROM`.
-4. Ejecuta una vez contra producción: `npx prisma migrate deploy`, `npm run db:seed` y `npm run admin:create` (con `ADMIN_*` solo en tu terminal, nunca en Vercel).
-5. Apunta el dominio a Vercel. HSTS se activa automáticamente en producción.
+4. El build de Vercel aplica las migraciones pendientes automáticamente (`prisma migrate deploy` forma parte del script `build`, usando `DIRECT_URL`). Si una migración falla, el build falla y no se publica.
+5. Ejecuta una vez contra producción desde tu terminal: `npm run db:seed` y `npm run admin:create` (con `DATABASE_URL`/`DIRECT_URL` de producción y `ADMIN_*` solo en tu terminal, nunca en Vercel).
+6. Apunta el dominio a Vercel. HSTS se activa automáticamente en producción.
 
 En entornos *Preview* de Vercel el `robots.txt` bloquea la indexación.
 
